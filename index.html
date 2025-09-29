@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>NeoCalc.com</title>
+<style>
+body {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 30px;
+  height: 100vh;
+  background: linear-gradient(135deg, #141e30, #243b55);
+  margin: 0;
+  font-family: Arial, sans-serif;
+  color: white;
+}
+
+.calculator {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+  backdrop-filter: blur(12px);
+  display: grid;
+  grid-template-columns: 320px 200px;
+  gap: 20px;
+}
+
+/* Header с названием и слоганом */
+.header {
+  text-align: center;
+  margin-bottom: 15px;
+}
+@keyframes neonGlow {
+  0%, 100% { text-shadow: 0 0 5px #00e5ff, 0 0 10px #00e5ff, 0 0 20px #00e5ff, 0 0 30px #00e5ff; }
+  50% { text-shadow: 0 0 10px #00e5ff, 0 0 20px #00e5ff, 0 0 30px #00e5ff, 0 0 40px #00e5ff; }
+}
+.header h1 {
+  font-size: 28px;
+  color: #00e5ff;
+  margin: 0;
+  animation: neonGlow 1.5s infinite alternate;
+}
+.header p {
+  font-size: 14px;
+  color: #b3e5fc;
+  margin: 2px 0 10px;
+  animation: neonGlow 2s infinite alternate;
+}
+
+.display {
+  width: 100%;
+  height: 60px;
+  background: rgba(0,0,0,0.3);
+  border: none;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  padding: 10px;
+  font-size: 24px;
+  text-align: right;
+  color: #fff;
+  outline: none;
+}
+
+.mode-toggle, .angle-toggle {
+  margin-bottom: 15px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 12px;
+  background: #2196f3;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 0.1s, background 0.3s;
+}
+.mode-toggle:hover, .angle-toggle:hover { background: #1976d2; }
+.mode-toggle:active, .angle-toggle:active { transform: scale(0.95); }
+
+.buttons {
+  display: grid;
+  grid-template-columns: repeat(6, 50px);
+  gap: 8px;
+}
+
+button {
+  height: 50px;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  cursor: pointer;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.1s, box-shadow 0.3s, background 0.2s;
+  box-shadow: 0 3px rgba(0,0,0,0.3);
+}
+button:active { transform: scale(0.92); box-shadow: 0 6px 15px rgba(255,255,255,0.5); }
+
+/* Плавное свечение кнопок при наведении */
+button:hover { transform: scale(1.05); }
+
+.btn-number { background: #2196f3; }
+.btn-operator { background: #ff9800; }
+.btn-func { background: #9c27b0; }
+.btn-clear { background: #f44336; }
+.btn-back { background: #03a9f4; }
+.btn-equal { background: #4caf50; grid-column: span 2; }
+
+/* Анимация перелива для научных кнопок */
+@keyframes neonShift {
+  0% { box-shadow: 0 0 15px 5px rgba(156,39,176,0.5),0 0 25px 10px rgba(156,39,176,0.3); }
+  25% { box-shadow: 0 0 15px 5px rgba(63,81,181,0.5),0 0 25px 10px rgba(63,81,181,0.3); }
+  50% { box-shadow: 0 0 15px 5px rgba(0,150,136,0.5),0 0 25px 10px rgba(0,150,136,0.3); }
+  75% { box-shadow: 0 0 15px 5px rgba(255,193,7,0.5),0 0 25px 10px rgba(255,193,7,0.3); }
+  100% { box-shadow: 0 0 15px 5px rgba(156,39,176,0.5),0 0 25px 10px rgba(156,39,176,0.3); }
+}
+.scientific.show:hover {
+  animation: neonShift 4s infinite alternate;
+}
+
+@keyframes neonNumberShift {
+  0% { box-shadow: 0 0 15px 5px rgba(33,150,243,0.5),0 0 25px 10px rgba(33,150,243,0.3); }
+  25% { box-shadow: 0 0 15px 5px rgba(0,188,212,0.5),0 0 25px 10px rgba(0,188,212,0.3); }
+  50% { box-shadow: 0 0 15px 5px rgba(0,255,127,0.5),0 0 25px 10px rgba(0,255,127,0.3); }
+  75% { box-shadow: 0 0 15px 5px rgba(255,193,7,0.5),0 0 25px 10px rgba(255,193,7,0.3); }
+  100% { box-shadow: 0 0 15px 5px rgba(33,150,243,0.5),0 0 25px 10px rgba(33,150,243,0.3); }
+}
+.btn-number.number-glow:hover {
+  animation: neonNumberShift 4s infinite alternate;
+}
+
+.scientific { opacity: 0; transform: translateY(-15px); pointer-events: none; transition: opacity 0.5s, transform 0.5s; }
+.scientific.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+.history {
+  background: rgba(0,0,0,0.2);
+  border-radius: 12px;
+  padding: 10px;
+  height: 550px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column-reverse;
+}
+.history-card {
+  background: rgba(255,255,255,0.1);
+  border-radius: 12px;
+  margin-bottom: 12px;
+  padding: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  backdrop-filter: blur(5px);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.history-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.5); }
+.expression { font-size: 14px; color: #ccc; }
+.result { font-size: 18px; color: #fff; font-weight: bold; margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<div class="calculator">
+  <div>
+    <div class="header">
+      <h1>NeoCalc</h1>
+      <p>Вычисляй будущее</p>
+    </div>
+
+    <input type="text" class="display" disabled>
+    <button class="mode-toggle">Переключить режим</button>
+    <button class="angle-toggle">Радианы</button>
+
+    <div class="buttons">
+      <!-- Научные кнопки -->
+      <button class="btn-func scientific">√</button>
+      <button class="btn-func scientific">∛</button>
+      <button class="btn-func scientific">x²</button>
+      <button class="btn-func scientific">x³</button>
+      <button class="btn-func scientific">^</button>
+      <button class="btn-func scientific">1/x</button>
+
+      <button class="btn-func scientific">sin</button>
+      <button class="btn-func scientific">cos</button>
+      <button class="btn-func scientific">tan</button>
+      <button class="btn-func scientific">asin</button>
+      <button class="btn-func scientific">acos</button>
+      <button class="btn-func scientific">atan</button>
+
+      <button class="btn-func scientific">sinh</button>
+      <button class="btn-func scientific">cosh</button>
+      <button class="btn-func scientific">tanh</button>
+      <button class="btn-func scientific">asinh</button>
+      <button class="btn-func scientific">acosh</button>
+      <button class="btn-func scientific">atanh</button>
+
+      <button class="btn-func scientific">ln</button>
+      <button class="btn-func scientific">log</button>
+      <button class="btn-func scientific">|x|</button>
+      <button class="btn-func scientific">!</button>
+      <button class="btn-func scientific">π</button>
+      <button class="btn-func scientific">e</button>
+
+      <!-- Обычные кнопки -->
+      <button class="btn-clear">C</button>
+      <button class="btn-back">←</button>
+      <button class="btn-operator">/</button>
+      <button class="btn-operator">*</button>
+
+      <!-- Цифры -->
+      <button class="btn-number">7</button>
+      <button class="btn-number">8</button>
+      <button class="btn-number">9</button>
+      <button class="btn-number">4</button>
+      <button class="btn-number">5</button>
+      <button class="btn-number">6</button>
+      <button class="btn-number">1</button>
+      <button class="btn-number">2</button>
+      <button class="btn-number">3</button>
+      <button class="btn-number" style="grid-column: span 2;">0</button>
+      <button class="btn-number">.</button>
+      <button class="btn-operator">-</button>
+      <button class="btn-operator">+</button>
+      <button class="btn-equal">=</button>
+    </div>
+  </div>
+
+  <div class="history" id="history"></div>
+</div>
+
+<script>
+const display = document.querySelector('.display');
+const buttons = document.querySelectorAll('button');
+const modeToggle = document.querySelector('.mode-toggle');
+const angleToggle = document.querySelector('.angle-toggle');
+const scientificButtons = document.querySelectorAll('.scientific');
+const historyDiv = document.getElementById('history');
+
+let scientificMode = false;
+let useDegrees = false;
+
+modeToggle.addEventListener("click", () => {
+  scientificMode = !scientificMode;
+  scientificButtons.forEach((btn,i) => {
+    if(scientificMode) setTimeout(() => btn.classList.add("show"), i*50);
+    else btn.classList.remove("show");
+  });
+  modeToggle.textContent = scientificMode ? "Научный режим" : "Обычный режим";
+});
+
+angleToggle.addEventListener("click", () => {
+  useDegrees = !useDegrees;
+  angleToggle.textContent = useDegrees ? "Градусы" : "Радианы";
+});
+
+function toRadians(x) { return useDegrees ? x * Math.PI / 180 : x; }
+function fromRadians(x) { return useDegrees ? x * 180 / Math.PI : x; }
+function factorial(n) { if(n<0) return NaN; if(n===0||n===1) return 1; return n*factorial(n-1); }
+
+function computeFunc(func, value) {
+  let num = parseFloat(value) || 0;
+  switch(func) {
+    case 'sin': return Math.sin(toRadians(num)).toFixed(6);
+    case 'cos': return Math.cos(toRadians(num)).toFixed(6);
+    case 'tan': return Math.tan(toRadians(num)).toFixed(6);
+    case 'asin': return fromRadians(Math.asin(num)).toFixed(6);
+    case 'acos': return fromRadians(Math.acos(num)).toFixed(6);
+    case 'atan': return fromRadians(Math.atan(num)).toFixed(6);
+    case 'sinh': return Math.sinh(num).toFixed(6);
+    case 'cosh': return Math.cosh(num).toFixed(6);
+    case 'tanh': return Math.tanh(num).toFixed(6);
+    case 'asinh': return Math.asinh(num).toFixed(6);
+    case 'acosh': return Math.acosh(num).toFixed(6);
+    case 'atanh': return Math.atanh(num).toFixed(6);
+  }
+  return num;
+}
+
+function addHistory(expression, result){
+  const card = document.createElement('div');
+  card.classList.add('history-card');
+  card.innerHTML = `<div class="expression">${expression}</div><div class="result">${result}</div>`;
+  historyDiv.prepend(card);
+}
+
+// Функция перемешивания массива
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+// Перемешиваем цифры при загрузке и добавляем перелив
+function shuffleNumberButtons() {
+  const numberButtons = Array.from(document.querySelectorAll('.btn-number'));
+  const digits = numberButtons.map(btn => btn.textContent);
+  const shuffled = shuffleArray(digits);
+  numberButtons.forEach((btn, index) => {
+    btn.textContent = shuffled[index];
+    btn.classList.add('number-glow');
+  });
+}
+shuffleNumberButtons();
+
+buttons.forEach(button => {
+  button.addEventListener('click', () => {
+    const value = button.textContent;
+    let expression = display.value;
+
+    if(value==='C') display.value='';
+    else if(value==='←') display.value=display.value.slice(0,-1);
+    else if(value==='='){
+      try{
+        let result = eval(expression);
+        display.value = result;
+        addHistory(expression, result);
+      } catch { display.value='Ошибка'; }
+    }
+    else if(value==='√') display.value=Math.sqrt(parseFloat(display.value)||0);
+    else if(value==='∛') display.value=Math.cbrt(parseFloat(display.value)||0);
+    else if(value==='x²') display.value=Math.pow(parseFloat(display.value)||0,2);
+    else if(value==='x³') display.value=Math.pow(parseFloat(display.value)||0,3);
+    else if(value==='^') display.value+='**';
+    else if(value==='1/x') display.value=1/(parseFloat(display.value)||1);
+    else if(["sin","cos","tan","asin","acos","atan","sinh","cosh","tanh","asinh","acosh","atanh"].includes(value)){
+      display.value = computeFunc(value, display.value);
+    }
+    else if(value==='ln') display.value=Math.log(parseFloat(display.value)).toFixed(6);
+    else if(value==='log') display.value=Math.log10(parseFloat(display.value)).toFixed(6);
+    else if(value==='|x|') display.value=Math.abs(parseFloat(display.value)||0);
+    else if(value==='!') display.value=factorial(parseInt(display.value)||0);
+    else if(value==='π') display.value+=Math.PI.toFixed(6);
+    else if(value==='e') display.value+=Math.E.toFixed(6);
+    else if(!["Переключить режим","Обычный режим","Научный режим","Радианы","Градусы"].includes(value)){
+      display.value+=value;
+    }
+  });
+
+  button.addEventListener('mousedown',()=>{button.style.boxShadow='0 0 15px 5px rgba(255,255,255,0.4)';});
+  button.addEventListener('mouseup',()=>{button.style.boxShadow='';});
+  button.addEventListener('mouseleave',()=>{button.style.boxShadow='';});
+});
+
+</script>
+</body>
+</html>
